@@ -1,0 +1,26 @@
+#!/bin/bash
+
+## Launch script:
+git commit -sm "'${1}'"
+
+## Or semantic versioning:
+if [ "$(echo "${1}" | grep 'MAJOR: ')" ]; then
+  VERSION="$(./.increment_versions.py --major)"
+elif [ "$(echo "${1}" | grep 'MINOR: ')" ]; then
+  VERSION="$(./.increment_versions.py --minor)"
+elif [ "$(echo "${1}" | grep 'PATCH: ')" ]; then
+  VERSION="$(./.increment_versions.py --patch)"
+else
+  echo "Enter a commit message prefixed with 'MAJOR: ', 'MINOR: ', or 'PATCH: ' to proceed."
+  exit 1
+fi
+
+echo "VERSION = '${VERSION}'" > ./_VERSION_.py
+
+git tag -a "${VERSION}" -m "'${VERSION}'"
+
+echo "Deploying ${VERSION}: ${1}"
+
+git push live +master
+git push live +master --tags
+
